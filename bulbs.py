@@ -1,9 +1,8 @@
-import os
-import sys
+import os, time, argparse
 from wyze_sdk import Client
 from wyze_sdk.errors import WyzeApiError
 from dotenv import load_dotenv
-import argparse
+
 
 load_dotenv()
 
@@ -50,6 +49,17 @@ def set_temperature(bulb, level):
     except WyzeApiError as e:
         print(f"Got an error: {e}")
 
+def dim(bulb, duration):
+    seconds = float(duration) * 60 * 60
+    interval = seconds / float(bulb.brightness)
+    
+    i = bulb.brightness
+    while i > 0:
+        set_brightness(bulb, i)
+        print(f"lowered brightness to {i}")
+        i -= 1
+        time.sleep(interval)
+
 def load_args():
     # Initialize parser
     parser = argparse.ArgumentParser()
@@ -61,6 +71,7 @@ def load_args():
     parser.add_argument("-c", "--color", help = "Set color of desired bulb")
     parser.add_argument("-t", "--temperature", help = "Set temperature of desired bulb")
     parser.add_argument("-b", "--brightness", help = "Set brightness of desired bulb")
+    parser.add_argument("-d", "--dim", help = "Dim a desired bulb within specified duration")
     
     # Read arguments from command line
     args = parser.parse_args()
@@ -80,6 +91,8 @@ def main():
         set_temperature(bulb, args.temperature)
     if args.brightness:
         set_brightness(bulb, args.brightness)
+    if args.dim:
+        dim(bulb, args.dim)
     
 if __name__ == "__main__":
     main()
